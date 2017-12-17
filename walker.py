@@ -10,7 +10,6 @@ import magic
 import hashlib
 
 # VERSION 0.2 Of the Application
-# Features exception handling
 
 BUF_SIZE = 65536
 DIR="'-'.join(TARGET_DIR.split(os.sep)).strip('-')"
