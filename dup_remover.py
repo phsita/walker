@@ -31,12 +31,18 @@ TIME="time.ctime().replace(' ','-').replace('--','-').replace(':','-')"
 
 # SFI_FILE --> STORED FILES INDEX File Containing Index of Files Stored
 # in Disk
-SFI_FILE_NAME='"{}_{}-{}-({}).txt".format(BN, eval(DIR), eval(time), COUNTER)'
+SFI_FILE_NAME='"{}_{}-{}-({}).txt".format(BN, eval(DIR), eval(TIME),\
+ SFI_COUNTER)'
 
-# DFI_FILE --> DELETED FILES INDEX File Containing Index of Files Deleted
+# Dfi_FILE --> DELETED FILES INDEX File Containing Index of Files Deleted
 # from Disk
-DFI_FILE_NAME='"Deleted_{}_{}-{}-({}).txt".format(BN, eval(DIR),
-    eval(time), COUNTER)'
+DFI_FILE_NAME='"Deleted_{}_{}-{}-({}).txt".format(BN, eval(DIR),\
+ eval(TIME), DFI_COUNTER)'
+
+# print("DIR: "+DIR+"\t\tTARGET_DIR: "+TARGET_DIR)
+
+SFI_FILE=str()
+DFI_FILE=str()
 
 # Return Checksum of Target
 def get_target_checksum(target_path):
@@ -54,7 +60,7 @@ def get_target_checksum(target_path):
 # Returns Size of Target File in Human Readable Format
 def get_target_size(size):
     units=dict()
-    units[0]="Bytes"
+    units[0]="B"
     units[1]="KB"
     units[2]="MB"
     units[3]="GB"
@@ -94,25 +100,22 @@ def get_target_data(target_name,target_path):
 # Write Data separated by Tab to a File
 def write_target_data(data,f_status):
     
-    if os.path.getsize(os.path.join(os.getcwd(),SFI_FILE_NAME))>=1048576:
+    if os.path.getsize(os.path.join(os.getcwd(),SFI_FILE))>=1048576:
         global SFI_COUNTER
         SFI_COUNTER+=1
-        global SFI_FILE_NAME
-        SFI_FILE_NAME=eval(SFI_FILE_NAME)
+        global SFI_FILE
+        SFI_FILE=eval(SFI_FILE_NAME)
 
-    if os.path.getsize(os.path.join(os.getcwd(),DFI_FILE_NAME))>=1048576:
+    if os.path.getsize(os.path.join(os.getcwd(),DFI_FILE))>=1048576:
         global DFI_COUNTER
         DFI_COUNTER+=1
-        global DFI_FILE_NAME
-        DFI_FILE_NAME=eval(DFI_FILE_NAME)
+        global DFI_FILE
+        DFI_FILE=eval(DFI_FILE_NAME)
     
     if f_status is 0:
-        output_file=open(SFI_FILE_NAME,"a+")
-    elif f_status is 1:
-        output_file=open(DFI_FILE_NAME,"a+")
+        output_file=open(SFI_FILE,"a+")
     else:
-        print("Nothing to write. Skipping.")
-        continue
+        output_file=open(DFI_FILE,"a+")
     
     fname=data.get("name")
     fpath=data.get("path")
@@ -133,7 +136,7 @@ def validate_data(target_file):
     target_checksum=target_file.get("checksum")
     target_rsize=target_file.get("rsize")
     status=-1
-    f=open(SFI_FILE_NAME,"a+")
+    f=open(SFI_FILE,"a+")
     check_sha=f.read().find(target_checksum)
     f.close()
     if ( check_sha is -1 or target_rsize is 0 ):
@@ -150,15 +153,27 @@ def start_app():
 #        out=open(CURRENT_FILE,"a+")
 #        out.close()
         # CREATING INDEX FILES
-        global SFI_FILE_NAME
-        SFI_FILE_NAME=eval(SFI_FILE_NAME)
-        global DFI_FILE_NAME
-        DFI_FILE_NAME=eval(DFI_FILE_NAME)
+        global SFI_FILE
+        SFI_FILE=eval(SFI_FILE_NAME)
+        global DFI_FILE
+        DFI_FILE=eval(DFI_FILE_NAME)
 
-        FILE=open(SFI_FILE_NAME,"a+")
-        FILE.close()
+#        BN="Files_Index"        SFI_COUNTER=1        DFI_COUNTER=1        TARGET_DIR=str()
+#        STATUS=""        TIME="time.ctime().replace(' ','-').replace('--','-').replace(':','-')"
+#        SFI_FILE_NAME='"{}_{}-{}-({}).txt".format(BN, eval(DIR), eval(TIME), SFI_COUNTER)'
+#        DFI_FILE_NAME='"Deleted_{}_{}-{}-({}).txt".format(BN, eval(DIR), eval(TIME), DFI_COUNTER)'
+#        SFI_FILE=str()
+#        DFI_FILE=str()
+
         
-        FILE=open(DFI_FILE_NAME,"a+")
+#        print("DIR: '{}'\tBN: '{}'\tTARGET_DIR: '{}'\nSTATUS: '{}'\tTIME: '{}'".format(DIR, BN, TARGET_DIR, STATUS, TIME))
+#        print("SFI_COUNTER: '{}'\tDFI_COUNTER: '{}'\nSFI_FILE_NAME: '{}'\nDFI_FILE_NAME: '{}'\t".format(SFI_COUNTER,DFI_COUNTER,SFI_FILE_NAME,DFI_FILE_NAME))
+#        print("SFI_FILE: '{}'\tDFI_FILE: '{}'".format(SFI_FILE,DFI_FILE))
+
+        FILE=open(SFI_FILE,"a+")
+        FILE.close()
+
+        FILE=open(DFI_FILE,"a+")
         FILE.close()
         
         start_time=time.time()
