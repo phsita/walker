@@ -38,6 +38,7 @@ SFI_FILE_NAME='"{}_{}-{}-({}).txt".format(BN, eval(DIR), eval(time), COUNTER)'
 DFI_FILE_NAME='"Deleted_{}_{}-{}-({}).txt".format(BN, eval(DIR),
     eval(time), COUNTER)'
 
+# Return Checksum of Target
 def get_target_checksum(target_path):
     sha512 = hashlib.sha512()
     with open(target_path, 'rb') as target:
@@ -50,6 +51,7 @@ def get_target_checksum(target_path):
     target.close()
     return target_checksum
 
+# Returns Size of Target File in Human Readable Format
 def get_target_size(size):
     units=dict()
     units[0]="Bytes"
@@ -66,10 +68,12 @@ def get_target_size(size):
         fsize=str(fsize)+" "+units.get(i)
     return fsize
 
+# Gives MIME Type of the Target File
 def get_target_type(target_path):
     target_type=magic.from_file(target_path, mime=True)
     return target_type
 
+# Collect all data regarding Target File and store in a Dictionary
 def get_target_data(target_name,target_path):
     data=dict()
     f=open(target_path,'rb')
@@ -87,13 +91,29 @@ def get_target_data(target_name,target_path):
     f.close()
     return data
 
-def write(data,f_status):
-    if os.path.getsize(os.path.join(os.getcwd(),CURRENT_FILE))>=1048576:
-        global COUNTER
-        COUNTER+=1
-        global CURRENT_FILE
-        CURRENT_FILE=eval(FILE_NAME)
-    out=open(CURRENT_FILE,"a+")
+# Write Data separated by Tab to a File
+def write_target_data(data,f_status):
+    
+    if os.path.getsize(os.path.join(os.getcwd(),SFI_FILE_NAME))>=1048576:
+        global SFI_COUNTER
+        SFI_COUNTER+=1
+        global SFI_FILE_NAME
+        SFI_FILE_NAME=eval(SFI_FILE_NAME)
+
+    if os.path.getsize(os.path.join(os.getcwd(),DFI_FILE_NAME))>=1048576:
+        global DFI_COUNTER
+        DFI_COUNTER+=1
+        global DFI_FILE_NAME
+        DFI_FILE_NAME=eval(DFI_FILE_NAME)
+    
+    if f_status is 0:
+        output_file=open(SFI_FILE_NAME,"a+")
+    elif f_status is 1:
+        output_file=open(DFI_FILE_NAME,"a+")
+    else:
+        print("Nothing to write. Skipping.")
+        continue
+    
     fname=data.get("name")
     fpath=data.get("path")
     ttype=data.get("type")
@@ -102,19 +122,18 @@ def write(data,f_status):
     rsize=data.get("rsize")
     string="{}\t{}\t{}\t{}\t{}\t{}\n".format(
         fname,fpath,ttype,fsize,checksum,rsize)
-
     # print(string)
-    out.write(string)
-    out.close()
+    output_file.write(string)
+    output_file.close()
 
-def validate_data(target_file)
+def validate_data(target_file):
 
     # STATUS = 0    -->    KEEP FILE
     # STATUS = 1    -->    DELETE FILE
     target_checksum=target_file.get("checksum")
     target_rsize=target_file.get("rsize")
     status=-1
-    f=open(CURRENT_FILE,"a+")
+    f=open(SFI_FILE_NAME,"a+")
     check_sha=f.read().find(target_checksum)
     f.close()
     if ( check_sha is -1 or target_rsize is 0 ):
@@ -126,10 +145,22 @@ def validate_data(target_file)
 
 def start_app():
     try:
-        global CURRENT_FILE
-        CURRENT_FILE=eval(FILE_NAME)
-        out=open(CURRENT_FILE,"a+")
-        out.close()
+#        global CURRENT_FILE
+#        CURRENT_FILE=eval(FILE_NAME)
+#        out=open(CURRENT_FILE,"a+")
+#        out.close()
+        # CREATING INDEX FILES
+        global SFI_FILE_NAME
+        SFI_FILE_NAME=eval(SFI_FILE_NAME)
+        global DFI_FILE_NAME
+        DFI_FILE_NAME=eval(DFI_FILE_NAME)
+
+        FILE=open(SFI_FILE_NAME,"a+")
+        FILE.close()
+        
+        FILE=open(DFI_FILE_NAME,"a+")
+        FILE.close()
+        
         start_time=time.time()
         print("Walking through the directory tree \""+TARGET_DIR+"\"")
         for root, dirs, files in os.walk(TARGET_DIR):
@@ -139,7 +170,10 @@ def start_app():
                         target_path=os.path.join(root,target_name)
                         target_data=get_target_data(target_name,target_path)
                         f_status=validate_data(target_data)
-                        write(target_data,f_status)
+                        write_target_data(target_data,f_status)
+                        if f_status:
+                            # print("Deleting File \""+target_path+"\"")
+                            os.remove(target_path)
 
                     except IOError as ie:
                         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -159,10 +193,10 @@ def start_app():
                             exc_traceback, limit=2, file=sys.stdout)
 
                     finally:
-                        time.sleep(0.2)
+                        time.sleep(0.002)
 
         end_time=time.time()
-        print("Done. Records stored in the current directory.")
+        print("Done. Records are stored in current directory.")
         proc_time=int(end_time-start_time)
         hrs=(proc_time/(3600*1.0))
         mins=(hrs%1)*60
@@ -184,8 +218,8 @@ def main():
                 TARGET_DIR=sys.argv[1]
                 start_app()
             elif (os.path.isfile(sys.argv[1])):
-                print(sys.argv[1]+\
-                    " is a file. Directory expected.\nTry again.")
+                print("\""+sys.argv[1]+
+                    "\" is a file. Directory expected.\nTry again.")
         
             elif (os.path.exists(sys.argv[1])):
                 print("Directory expected.\nTry again.")

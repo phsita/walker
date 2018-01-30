@@ -1,0 +1,21 @@
+Problem-
+Too many duplicate files are stored in Disk. This is eating up unnecessary space in Hard Drive
+
+Solution-
+Identify the duplicates under the directory tree and remove them one by one. Keep a delete log containing details of deleted files.
+
+Program Flow-
+
+Traverse Under a Directory Tree
+Create an empty file
+
+==========
+Delete Log
+==========
+
+----------------------------------------------------------------------------------------------------
+Deleted File Name	Delete File Path	Original File Path	Size	Size	Sha Checksum
+----------------------------------------------------------------------------------------------------
+
+
+Sha	FileName
