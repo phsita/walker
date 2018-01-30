@@ -27,7 +27,7 @@ DFI_COUNTER=1
 # Target Directory 
 TARGET_DIR=str()
 STATUS=""
-TIME="time.ctime().replace(' ','-').replace('--','-').replace(':','-')"
+TIME="time.ctime().replace(' ','_').replace('--','-').replace(':','-')"
 
 # SFI_FILE --> STORED FILES INDEX File Containing Index of Files Stored
 # in Disk
@@ -99,17 +99,18 @@ def get_target_data(target_name,target_path):
 
 # Write Data separated by Tab to a File
 def write_target_data(data,f_status):
-    
+
+    global SFI_FILE
+    global DFI_FILE
+    global SFI_COUNTER
+    global DFI_COUNTER
+   
     if os.path.getsize(os.path.join(os.getcwd(),SFI_FILE))>=1048576:
-        global SFI_COUNTER
         SFI_COUNTER+=1
-        global SFI_FILE
         SFI_FILE=eval(SFI_FILE_NAME)
 
     if os.path.getsize(os.path.join(os.getcwd(),DFI_FILE))>=1048576:
-        global DFI_COUNTER
         DFI_COUNTER+=1
-        global DFI_FILE
         DFI_FILE=eval(DFI_FILE_NAME)
     
     if f_status is 0:
@@ -131,6 +132,7 @@ def write_target_data(data,f_status):
 
 def validate_data(target_file):
 
+    
     # STATUS = 0    -->    KEEP FILE
     # STATUS = 1    -->    DELETE FILE
     target_checksum=target_file.get("checksum")
@@ -147,15 +149,15 @@ def validate_data(target_file):
     return status
 
 def start_app():
+    global SFI_FILE
+    global DFI_FILE
     try:
 #        global CURRENT_FILE
 #        CURRENT_FILE=eval(FILE_NAME)
 #        out=open(CURRENT_FILE,"a+")
 #        out.close()
         # CREATING INDEX FILES
-        global SFI_FILE
         SFI_FILE=eval(SFI_FILE_NAME)
-        global DFI_FILE
         DFI_FILE=eval(DFI_FILE_NAME)
 
 #        BN="Files_Index"        SFI_COUNTER=1        DFI_COUNTER=1        TARGET_DIR=str()
